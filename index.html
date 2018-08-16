@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>write a poem</title>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="favicon.png"/>
+  <style>
+    body {
+      margin: 0px;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      filter: blur(0.5px);
+    }
+
+    p {
+      position: absolute;
+      max-width: 70%;
+      margin: 0px;
+      text-align: justify;
+      font-family: 'Courier';
+      font-style: italic;
+      font-size: 30px;
+      letter-spacing: 5px;
+      transition: transform 0.1s, color 0.1s;
+      mix-blend-mode: color-dodge;
+    }
+
+    @keyframes blink {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .cursor {
+      animation: blink 0.5s ease infinite alternate;
+    }
+  </style>
+</head>
+
+<body>
+</body>
+
+<script src="epic-poetry.js"></script>
+
+<script>
+  var settings = {
+    layers : 5,
+
+    colors : ['#ff0000', '#00ff00', '#0000ff'],
+
+    jitter : {
+      x : 1,
+      y : 1,
+    },
+
+    delay : {
+      style : {
+        min : 100,
+        max : 200,
+      },
+
+      character : {
+        min :   0,
+        max : 100,
+      },
+    },
+  };
+
+  var poemsToUse = [
+    poems.iliad,
+    poems.odyssey,
+    poems.ramayana,
+    poems.deRerumNatura,
+    poems.aeneid,
+    poems.metamorphoses,
+    poems.beowulf,
+    poems.theSongOfRoland,
+    poems.nibelungenlied,
+    poems.divineComedy,
+    poems.paradiseLost,
+    poems.kalevala,
+    poems.idyllsOfTheKing,
+  ];
+
+  var corpus = poemsToUse.reduce((x, y) => x.concat(y));
+
+  var randomIntegerInclusive = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  var randomItem = array => {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  var createLayers = () => {
+    for (var i = 0; i < settings.layers; i++) {
+      (i => {
+        var pre = document.createElement('p');
+        document.body.appendChild(pre);
+
+        var text = document.createElement('span');
+        pre.appendChild(text);
+        text.className = 'text';
+
+        var cursor = document.createElement('span');
+        pre.appendChild(cursor);
+        cursor.className = 'cursor';
+        cursor.innerHTML = '|';
+
+        var style = () => {
+          var [x, y] = [settings.jitter.x, settings.jitter.y].map(n => randomIntegerInclusive(...[-1, 1].map(s => n * s)));
+          pre.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+          pre.style.color = randomItem(settings.colors);
+          var delay = randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
+          setTimeout(style, delay);
+        }
+
+        style();
+      })(i);
+    }
+  }
+
+  var type = () => {
+    if (settings.message === undefined) {
+      var lines  = randomIntegerInclusive(1, 8);
+      var offset = randomIntegerInclusive(0, corpus.length - 1);
+
+      settings.message = Array.from({length: lines}, (v, i) => corpus[(i + offset) % corpus.length]).join(' ');
+    }
+
+    var texts = document.getElementsByClassName('text');
+
+    document.body.onkeypress = () => {
+      var newCharacters = randomIntegerInclusive(1, 6);
+
+      for (var j = 0; j < newCharacters; j++) {
+        for (var i = 0; i < texts.length; i++) {
+          (i => {
+            var addCharacter = () => {
+              if (texts[i].innerHTML.length < settings.message.length) {
+                texts[i].innerHTML = settings.message.slice(0, texts[i].innerHTML.length + 1);
+              }
+            }
+
+            var delay = randomIntegerInclusive(settings.delay.character.min, settings.delay.character.max);
+            setTimeout(addCharacter, delay);
+          })(i);
+        }
+      }
+    }
+  }
+
+  createLayers();
+  type();
+</script>
+
+</html>
