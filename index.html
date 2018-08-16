@@ -14,17 +14,29 @@
       justify-content: center;
       align-items: center;
       background: black;
+      transition: filter 0.1s;
+    }
+
+    #container {
+      position: absolute;
+      display: inherit;
+      justify-content: inherit;
+      align-items: inherit;
+      width: calc(100% - 400px);
+      height: calc(100% - 200px);
+      overflow: scroll;
     }
 
     p {
       position: absolute;
-      max-width: 70%;
+      max-width: 100%;
+      max-height: 100%;
       margin: 0px;
       text-align: justify;
       font-family: 'Courier';
       font-style: italic;
       font-size: 30px;
-      letter-spacing: 5px;
+      letter-spacing: 3px;
       transition: transform 0.1s, color 0.1s;
       mix-blend-mode: color-dodge;
     }
@@ -36,6 +48,10 @@
 
     .cursor {
       animation: blink 0.5s ease infinite alternate;
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
     }
   </style>
 </head>
@@ -67,12 +83,7 @@
 
     colors : ['#ff0000', '#00ff00', '#0000ff'],
 
-    lines : {
-      min :  4,
-      max : 12,
-    },
-
-    keystroke : {
+    typingSpeed : {
       min : 1,
       max : 8,
     },
@@ -123,7 +134,21 @@
     return array[Math.floor(Math.random() * array.length)];
   }
 
+  var rotateArray = (array, distance) => {
+    var output = array.slice(0);
+
+    for (var i = 0; i < distance; i++) {
+      output.unshift(output.pop());
+    }
+
+    return output;
+  }
+
   var coin = p => Math.random() < p;
+
+  settings.container = document.createElement('div');
+  document.body.appendChild(settings.container);
+  settings.container.id = 'container';
 
   var styleBody = () => {
     var blur = coin(settings.blur.probability) ? settings.blur.default : settings.blur.altered;
@@ -136,7 +161,7 @@
     for (var i = 0; i < settings.layers; i++) {
       (i => {
         var p = document.createElement('p');
-        document.body.appendChild(p);
+        settings.container.appendChild(p);
 
         var text = document.createElement('span');
         p.appendChild(text);
@@ -163,15 +188,15 @@
   var type = () => {
     if (settings.message === undefined) {
       var poem   = randomItem(settings.corpus);
-      var lines  = randomIntegerInclusive(settings.lines.min, settings.lines.max);
       var offset = randomIntegerInclusive(0, poem.length - 1);
-      settings.message = Array.from({length: lines}, (v, i) => poem[(i + offset) % poem.length]).join(' ');
+
+      settings.message = rotateArray(poem, offset).join(' ');
     }
 
     var texts = document.getElementsByClassName('text');
 
     document.body.onkeypress = () => {
-      var newCharacters = randomIntegerInclusive(settings.keystroke.min, settings.keystroke.max);
+      var newCharacters = randomIntegerInclusive(settings.typingSpeed.min, settings.typingSpeed.max);
 
       for (var j = 0; j < newCharacters; j++) {
         for (var i = 0; i < texts.length; i++) {
@@ -187,6 +212,8 @@
           })(i);
         }
       }
+
+      settings.container.scrollTop = settings.container.scrollHeight;
     }
   }
 
