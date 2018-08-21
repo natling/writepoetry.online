@@ -120,44 +120,48 @@
     },
   };
 
-  var randomFloat = (min, max) => {
-    return Math.random() * (max - min) + min;
+  var f = {
+    randomFloat : (min, max) => {
+      return Math.random() * (max - min) + min;
+    },
+
+    randomIntegerInclusive : (min, max) => {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+
+    randomItem : array => {
+      return array[Math.floor(Math.random() * array.length)];
+    },
+
+    rotateArray : (array, distance) => {
+      var output = array.slice(0);
+
+      for (var i = 0; i < distance; i++) {
+        output.unshift(output.pop());
+      }
+
+      return output;
+    },
+
+    coin : p => Math.random() < p,
+  };
+
+  f.styleBody = () => {
+    var blur = f.coin(settings.blur.probability) ? settings.blur.default : settings.blur.altered;
+    document.body.style.filter = 'blur(' + f.randomFloat(blur.min, blur.max) + 'px)';
+    var delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
+    setTimeout(f.styleBody, delay);
   }
 
-  var randomIntegerInclusive = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  f.createContainer = () => {
+    settings.container = document.createElement('div');
+    document.body.appendChild(settings.container);
+    settings.container.id = 'container';
   }
 
-  var randomItem = array => {
-    return array[Math.floor(Math.random() * array.length)];
-  }
-
-  var rotateArray = (array, distance) => {
-    var output = array.slice(0);
-
-    for (var i = 0; i < distance; i++) {
-      output.unshift(output.pop());
-    }
-
-    return output;
-  }
-
-  var coin = p => Math.random() < p;
-
-  settings.container = document.createElement('div');
-  document.body.appendChild(settings.container);
-  settings.container.id = 'container';
-
-  var styleBody = () => {
-    var blur = coin(settings.blur.probability) ? settings.blur.default : settings.blur.altered;
-    document.body.style.filter = 'blur(' + randomFloat(blur.min, blur.max) + 'px)';
-    var delay = randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
-    setTimeout(styleBody, delay);
-  }
-
-  var createLayers = () => {
+  f.createLayers = () => {
     for (var i = 0; i < settings.layers; i++) {
       (i => {
         var p = document.createElement('p');
@@ -173,10 +177,10 @@
         cursor.innerHTML = '|';
 
         var style = () => {
-          var [x, y] = [settings.jitter.x, settings.jitter.y].map(n => randomIntegerInclusive(...[-1, 1].map(s => n * s)));
+          var [x, y] = [settings.jitter.x, settings.jitter.y].map(n => f.randomIntegerInclusive(...[-1, 1].map(s => n * s)));
           p.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-          p.style.color = randomItem(settings.colors);
-          var delay = randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
+          p.style.color = f.randomItem(settings.colors);
+          var delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
           setTimeout(style, delay);
         }
 
@@ -185,18 +189,18 @@
     }
   }
 
-  var type = () => {
+  f.type = () => {
     if (settings.message === undefined) {
-      var poem   = randomItem(settings.corpus);
-      var offset = randomIntegerInclusive(0, poem.length - 1);
+      var poem   = f.randomItem(settings.corpus);
+      var offset = f.randomIntegerInclusive(0, poem.length - 1);
 
-      settings.message = rotateArray(poem, offset).join(' ');
+      settings.message = f.rotateArray(poem, offset).join(' ');
     }
 
     var texts = document.getElementsByClassName('text');
 
     document.body.onkeypress = () => {
-      var newCharacters = randomIntegerInclusive(settings.typingSpeed.min, settings.typingSpeed.max);
+      var newCharacters = f.randomIntegerInclusive(settings.typingSpeed.min, settings.typingSpeed.max);
 
       for (var j = 0; j < newCharacters; j++) {
         for (var i = 0; i < texts.length; i++) {
@@ -207,7 +211,7 @@
               }
             }
 
-            var delay = randomIntegerInclusive(settings.delay.character.min, settings.delay.character.max);
+            var delay = f.randomIntegerInclusive(settings.delay.character.min, settings.delay.character.max);
             setTimeout(addCharacter, delay);
           })(i);
         }
@@ -217,9 +221,10 @@
     }
   }
 
-  styleBody();
-  createLayers();
-  type();
+  f.styleBody();
+  f.createContainer();
+  f.createLayers();
+  f.type();
 </script>
 
 </html>
