@@ -62,7 +62,7 @@
 <script src="epic-poetry.js"></script>
 
 <script>
-  var settings = {
+  const settings = {
     corpus : [
       poems.iliad,
       poems.odyssey,
@@ -120,10 +120,8 @@
     },
   };
 
-  var f = {
-    randomFloat : (min, max) => {
-      return Math.random() * (max - min) + min;
-    },
+  const f = {
+    randomFloat : (min, max) => Math.random() * (max - min) + min,
 
     randomIntegerInclusive : (min, max) => {
       min = Math.ceil(min);
@@ -131,14 +129,12 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     },
 
-    randomItem : array => {
-      return array[Math.floor(Math.random() * array.length)];
-    },
+    randomItem : array => array[Math.floor(Math.random() * array.length)],
 
     rotateArray : (array, distance) => {
-      var output = array.slice(0);
+      const output = array.slice(0);
 
-      for (var i = 0; i < distance; i++) {
+      for (let i = 0; i < distance; i++) {
         output.unshift(output.pop());
       }
 
@@ -149,9 +145,9 @@
   };
 
   f.styleBody = () => {
-    var blur = f.coin(settings.blur.probability) ? settings.blur.default : settings.blur.altered;
+    const blur = f.coin(settings.blur.probability) ? settings.blur.default : settings.blur.altered;
     document.body.style.filter = 'blur(' + f.randomFloat(blur.min, blur.max) + 'px)';
-    var delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
+    const delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
     setTimeout(f.styleBody, delay);
   }
 
@@ -162,25 +158,25 @@
   }
 
   f.createLayers = () => {
-    for (var i = 0; i < settings.layers; i++) {
+    for (let i = 0; i < settings.layers; i++) {
       (i => {
-        var p = document.createElement('p');
+        const p = document.createElement('p');
         settings.container.appendChild(p);
 
-        var text = document.createElement('span');
+        const text = document.createElement('span');
         p.appendChild(text);
         text.className = 'text';
 
-        var cursor = document.createElement('span');
+        const cursor = document.createElement('span');
         p.appendChild(cursor);
         cursor.className = 'cursor';
         cursor.innerHTML = '|';
 
-        var style = () => {
-          var [x, y] = [settings.jitter.x, settings.jitter.y].map(n => f.randomIntegerInclusive(...[-1, 1].map(s => n * s)));
+        const style = () => {
+          const [x, y] = [settings.jitter.x, settings.jitter.y].map(n => f.randomIntegerInclusive(...[-1, 1].map(s => n * s)));
           p.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
           p.style.color = f.randomItem(settings.colors);
-          var delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
+          const delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
           setTimeout(style, delay);
         }
 
@@ -191,27 +187,27 @@
 
   f.type = () => {
     if (settings.message === undefined) {
-      var poem   = f.randomItem(settings.corpus);
-      var offset = f.randomIntegerInclusive(0, poem.length - 1);
+      const poem   = f.randomItem(settings.corpus);
+      const offset = f.randomIntegerInclusive(0, poem.length - 1);
 
       settings.message = f.rotateArray(poem, offset).join(' ');
     }
 
-    var texts = document.getElementsByClassName('text');
+    const texts = document.getElementsByClassName('text');
 
     document.body.onkeypress = () => {
-      var newCharacters = f.randomIntegerInclusive(settings.typingSpeed.min, settings.typingSpeed.max);
+      const newCharacters = f.randomIntegerInclusive(settings.typingSpeed.min, settings.typingSpeed.max);
 
-      for (var j = 0; j < newCharacters; j++) {
-        for (var i = 0; i < texts.length; i++) {
+      for (let j = 0; j < newCharacters; j++) {
+        for (let i = 0; i < texts.length; i++) {
           (i => {
-            var addCharacter = () => {
+            const addCharacter = () => {
               if (texts[i].innerHTML.length < settings.message.length) {
                 texts[i].innerHTML = settings.message.slice(0, texts[i].innerHTML.length + 1);
               }
             }
 
-            var delay = f.randomIntegerInclusive(settings.delay.character.min, settings.delay.character.max);
+            const delay = f.randomIntegerInclusive(settings.delay.character.min, settings.delay.character.max);
             setTimeout(addCharacter, delay);
           })(i);
         }
