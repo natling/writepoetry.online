@@ -121,13 +121,16 @@
   };
 
   const f = {
-    randomFloat : (min, max) => Math.random() * (max - min) + min,
-
     randomIntegerInclusive : (min, max) => {
       min = Math.ceil(min);
       max = Math.floor(max);
       return Math.floor(Math.random() * (max - min + 1)) + min;
     },
+
+    randomFloat : (min, max) => Math.random() * (max - min) + min,
+
+    randomIntegerInRange : range => f.randomIntegerInclusive(range.min, range.max),
+    randomFloatInRange   : range => f.randomFloat(range.min, range.max),
 
     randomItem : array => array[Math.floor(Math.random() * array.length)],
 
@@ -144,83 +147,72 @@
     coin : p => Math.random() < p,
   };
 
-  f.styleBody = () => {
-    const blur = f.coin(settings.blur.probability) ? settings.blur.default : settings.blur.altered;
-    document.body.style.filter = 'blur(' + f.randomFloat(blur.min, blur.max) + 'px)';
-    const delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
-    setTimeout(f.styleBody, delay);
+  const styleBody = () => {
+    const blur = settings.blur[f.coin(settings.blur.probability) ? 'default' : 'altered'];
+    document.body.style.filter = 'blur(' + f.randomFloatInRange(blur) + 'px)';
+    const delay = f.randomIntegerInRange(settings.delay.style);
+    setTimeout(styleBody, delay);
   }
 
-  f.createContainer = () => {
+  const createLayers = layers => {
     settings.container = document.createElement('div');
     document.body.appendChild(settings.container);
     settings.container.id = 'container';
-  }
 
-  f.createLayers = () => {
-    for (let i = 0; i < settings.layers; i++) {
-      (i => {
-        const p = document.createElement('p');
-        settings.container.appendChild(p);
+    const poem   = f.randomItem(settings.corpus);
+    const offset = f.randomIntegerInclusive(0, poem.length - 1);
 
-        const text = document.createElement('span');
-        p.appendChild(text);
-        text.className = 'text';
+    settings.message = f.rotateArray(poem, offset).join(' ').split('');
 
-        const cursor = document.createElement('span');
-        p.appendChild(cursor);
-        cursor.className = 'cursor';
-        cursor.innerHTML = '|';
+    settings.texts = Array.from({length: layers}, () => {
+      const p = document.createElement('p');
+      settings.container.appendChild(p);
 
-        const style = () => {
-          const [x, y] = [settings.jitter.x, settings.jitter.y].map(n => f.randomIntegerInclusive(...[-1, 1].map(s => n * s)));
-          p.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-          p.style.color = f.randomItem(settings.colors);
-          const delay = f.randomIntegerInclusive(settings.delay.style.min, settings.delay.style.max);
-          setTimeout(style, delay);
-        }
+      const text = document.createElement('span');
+      p.appendChild(text);
+      text.className = 'text';
 
-        style();
-      })(i);
-    }
-  }
+      const cursor = document.createElement('span');
+      p.appendChild(cursor);
+      cursor.className = 'cursor';
+      cursor.innerHTML = '|';
 
-  f.type = () => {
-    if (settings.message === undefined) {
-      const poem   = f.randomItem(settings.corpus);
-      const offset = f.randomIntegerInclusive(0, poem.length - 1);
-
-      settings.message = f.rotateArray(poem, offset).join(' ');
-    }
-
-    const texts = document.getElementsByClassName('text');
-
-    document.body.onkeypress = () => {
-      const newCharacters = f.randomIntegerInclusive(settings.typingSpeed.min, settings.typingSpeed.max);
-
-      for (let j = 0; j < newCharacters; j++) {
-        for (let i = 0; i < texts.length; i++) {
-          (i => {
-            const addCharacter = () => {
-              if (texts[i].innerHTML.length < settings.message.length) {
-                texts[i].innerHTML = settings.message.slice(0, texts[i].innerHTML.length + 1);
-              }
-            }
-
-            const delay = f.randomIntegerInclusive(settings.delay.character.min, settings.delay.character.max);
-            setTimeout(addCharacter, delay);
-          })(i);
-        }
+      const style = () => {
+        const [x, y] = [settings.jitter.x, settings.jitter.y].map(n => f.randomIntegerInclusive(...[-1, 1].map(s => n * s)));
+        p.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        p.style.color = f.randomItem(settings.colors);
+        const delay = f.randomIntegerInRange(settings.delay.style);
+        setTimeout(style, delay);
       }
 
-      settings.container.scrollTop = settings.container.scrollHeight;
-    }
+      style();
+      return text;
+    });
   }
 
-  f.styleBody();
-  f.createContainer();
-  f.createLayers();
-  f.type();
+  document.body.onkeypress = () => {
+    let characters = f.randomIntegerInRange(settings.typingSpeed);
+
+    const type = () => {
+      if (characters > 0) {
+        characters--;
+        const next = settings.message.shift();
+
+        settings.texts.forEach(text => {
+          text.innerHTML += next;
+        });
+
+        const delay = f.randomIntegerInRange(settings.delay.character);
+        setTimeout(type, delay);
+      }
+    }
+
+    type();
+    settings.container.scrollTop = settings.container.scrollHeight;
+  }
+
+  styleBody();
+  createLayers(settings.layers);
 </script>
 
 </html>
