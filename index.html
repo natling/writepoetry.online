@@ -197,11 +197,7 @@
       if (characters > 0) {
         characters--;
         const next = settings.message.shift();
-
-        settings.texts.forEach(text => {
-          text.innerHTML += next;
-        });
-
+        settings.texts.forEach(text => text.innerHTML += next);
         const delay = f.randomIntegerInRange(settings.delay.character);
         setTimeout(type, delay);
       }
