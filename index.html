@@ -129,8 +129,8 @@
 
     randomFloat : (min, max) => Math.random() * (max - min) + min,
 
-    randomIntegerInRange : range => f.randomIntegerInclusive(range.min, range.max),
-    randomFloatInRange   : range => f.randomFloat(range.min, range.max),
+    randomIntegerInRange : ({min, max}) => f.randomIntegerInclusive(min, max),
+    randomFloatInRange   : ({min, max}) => f.randomFloat(min, max),
 
     randomItem : array => array[Math.floor(Math.random() * array.length)],
 
@@ -149,9 +149,8 @@
 
   const styleBody = () => {
     const blur = settings.blur[f.coin(settings.blur.probability) ? 'default' : 'altered'];
-    document.body.style.filter = 'blur(' + f.randomFloatInRange(blur) + 'px)';
-    const delay = f.randomIntegerInRange(settings.delay.style);
-    setTimeout(styleBody, delay);
+    document.body.style.filter = `blur(${f.randomFloatInRange(blur)}px)`;
+    setTimeout(styleBody, f.randomIntegerInRange(settings.delay.style));
   }
 
   const createLayers = layers => {
@@ -179,10 +178,9 @@
 
       const style = () => {
         const [x, y] = [settings.jitter.x, settings.jitter.y].map(n => f.randomIntegerInclusive(...[-1, 1].map(s => n * s)));
-        p.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        p.style.transform = `translate(${x}px, ${y}px)`;
         p.style.color = f.randomItem(settings.colors);
-        const delay = f.randomIntegerInRange(settings.delay.style);
-        setTimeout(style, delay);
+        setTimeout(style, f.randomIntegerInRange(settings.delay.style));
       }
 
       style();
@@ -198,8 +196,7 @@
         characters--;
         const next = settings.message.shift();
         settings.texts.forEach(text => text.innerHTML += next);
-        const delay = f.randomIntegerInRange(settings.delay.character);
-        setTimeout(type, delay);
+        setTimeout(type, f.randomIntegerInRange(settings.delay.character));
       }
     }
 
